@@ -4,16 +4,16 @@ FROM node:24.5-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files from ui2 directory
-COPY ui2/package.json ./
-COPY ui2/yarn.lock* ./
-COPY ui2/package-lock.json* ./
+# Copy package files (Railway should be building from ui2 directory context)
+COPY package.json ./
+COPY yarn.lock* ./
+COPY package-lock.json* ./
 
 # Install dependencies
 RUN npm ci --omit=dev
 
-# Copy source code from ui2 directory (excluding files in .dockerignore)
-COPY ui2/ .
+# Copy source code (all files in current directory)
+COPY . .
 
 # Build the application
 RUN npm run build

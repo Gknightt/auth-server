@@ -1,4 +1,4 @@
-# Frontend-only Dockerfile for Railway deployment from repository root
+# Frontend-only Dockerfile for Railway deployment
 FROM node:24.5-alpine
 
 # Install serve globally first
@@ -7,21 +7,14 @@ RUN npm install -g serve
 # Set working directory
 WORKDIR /app
 
-# Copy package files from ui2 directory (assuming build context is repo root)
-COPY ui2/package.json ./
-COPY ui2/yarn.lock* ./
+# Debug: List contents to see what's available
+RUN echo "=== Listing root directory ===" && ls -la / || true
+RUN echo "=== Listing current directory ===" && ls -la . || true
+RUN echo "=== Looking for ui2 directory ===" && find / -name "ui2" -type d 2>/dev/null || true
 
-# Install dependencies
-RUN npm ci --omit=dev
+# Try different possible locations for the ui2 directory
+# First, try if we're already in ui2 directory (Railway set root directory correctly)
+COPY package.json* ./
+COPY yarn.lock* ./
 
-# Copy all ui2 source code
-COPY ui2/ .
-
-# Build the application
-RUN npm run build
-
-# Expose port (Railway will override this with PORT env var)
-EXPOSE 3000
-
-# Start the application - Railway will set PORT env var
-CMD sh -c "serve -s dist -l ${PORT:-3000}"
+# If that fails, the build will stop here and we'll know the issue

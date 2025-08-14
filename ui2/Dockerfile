@@ -4,11 +4,15 @@ FROM node:24.5-alpine
 # Set working directory
 WORKDIR /app
 
+# Copy package files
+COPY package.json ./
+COPY yarn.lock* ./
+COPY package-lock.json* ./
+
 # Install dependencies
-COPY package.json yarn.lock* package-lock.json* ./
 RUN npm ci --omit=dev
 
-# Copy source code
+# Copy source code (excluding files in .dockerignore)
 COPY . .
 
 # Build the application

@@ -16,6 +16,15 @@ from auth_server.db import api as dbapi
 
 app = FastAPI()
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 settings = get_settings()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 logger = logging.getLogger(__name__)

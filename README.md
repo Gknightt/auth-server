@@ -1,133 +1,43 @@
-# Authentication Server
+# Auth-Server Frontend
 
-Auth server is standalone microservice that provides
-authentication capabilities, and it is used as default authentication service
-for Papermerge DMS.
+## Build and dev scripts
 
-Following authentication methods are supported:
+- `dev` – start development server
+- `build` – build production version of the app
+- `preview` – locally preview production build
 
-* database - authenticate against user credentials from the database's
-  core_user table
-* oidc - authenticate against OIDC provider
-* ldap - authenticate with LDAP
+### Testing scripts
 
-When authentication succeeds, auth server responds with a valid
-cryptographically signed JWT access token.
+- `typecheck` – checks TypeScript types
+- `lint` – runs ESLint
+- `prettier:check` – checks files with Prettier
+- `vitest` – runs vitest tests
+- `vitest:watch` – starts vitest watch
+- `test` – runs `vitest`, `prettier:check`, `lint` and `typecheck` scripts
 
-JWT token is delivered to the client as http response payload (json format)
-and as cookie.
+### Other scripts
 
-## Usage
+- `storybook` – starts storybook dev server
+- `storybook:build` – build production storybook bundle to `storybook-static`
+- `prettier:write` – formats all files with Prettier
 
-To start backend server:
-```
-  $ poetry run task server
-```
-To start frontend (in dev mode):
-```
-  $ cd ui2
-  $ yarn dev
-```
-Use nginx.conf (from the root folder) to play.  
-Command to start nginx:
+
+
+## Dev Notes
+
+### Upgrade Yarn
 
 ```
-  $ sudo nginx -c nginx.conf -p $PWD
+ $ yarn set version stable
 ```
 
-nginx will serve assets from `ui2/dist` folder.
-To build assets use:
+The above command will do change files [like in this commit](https://github.com/papermerge/auth-server/pull/53/commits/e33332588e6ae9ba737ae821a8a43f72b614e9b6)
+
+Note that currently used yarn version is listed in `.yarnrc.yaml`
+
+
+## Interactive Upgrade of All FE deps
 
 ```
- $ yarn build
+yarn upgrade-interactive
 ```
-
-In order to enable authentication via OIDC provider you need to
-provide following environment variables:
-
-* `PAPERMERGE__AUTH__OIDC_CLIENT_SECRET`
-* `PAPERMERGE__AUTH__OIDC_CLIENT_ID`
-* `PAPERMERGE__AUTH__OIDC_ACCESS_TOKEN_URL`
-* `PAPERMERGE__AUTH__OIDC_USER_INFO_URL`
-* `PAPERMERGE__AUTH__OIDC_INTROSPECT_URL`
-
-You need to provider all five values.
-
-`PAPERMERGE__AUTH__OIDC_REDIRECT_URI` should be:
-
-    <http|https>://<your domain>/oidc/callback
-
-Above value should be same as in field "Authorized redirect URI" when
-registering oauth2 client.
-
-
-Application providers one single endpoint `POST /token` which return jwt access
-token. There two valid options for using `POST /token` endpoint:
-
-1. non-empty request body with user credentials (application/json)
-2. empty request body, but non-empty valid request params
-
-In case 1. application will authenticate again user credentials in database
-(TBD: or againt LDAP credentials, if LDAP configurations are present).
-Here is an example of POST request with user credentials:
-
-    $ curl -v -XPOST http://localhost:8000/token -H 'Content-Type: application/json' \
-        -d '{"username": "username", "password":"password"}'
-
-In case 2. i.e. when POST body is empty, then application using information from
-request parameters will authenticate against one of the available OAuth 2.0
-providers:
-
-    $ curl -v -XPOST "http://localhost:8000/token?provider=google&code=123 ..."
-
-For documentation on request parameters see http://localhost:8000/docs
-
-On successful login "access_token" will be provided in response body.
-
-You can decode JWT payload with:
-
-    $ echo -n payload | base64 -d
-
-## Configurations
-
-This section lists all configuration environment variables.
-
-### Security
-
-* `PAPERMERGE__SECURITY__SECRET` (**required**)
-* `PAPERMERGE__SECURITY__TOKEN_ALGORITHM` default value "HS256"
-* `PAPERMERGE__SECURITY__TOKEN_EXPIRE_MINUTES` default value is 60
-
-Possible values for token algorithm are:
-
-* HS256
-* HS384
-* HS512
-* RS256
-* RS384
-* RS512
-* ES256
-* ES384
-* ES512
-
-### Database
-
-* `PAPERMERGE__DATABASE__URL` (optional)
-
-Default value is "sqlite:////db/db.sqlite3". PostgreSql and MySql/MariaDB are
-supported as well.  For PostgreSql scheme is `postgresql` and for MySql/MariaDB
-scheme is `mysql`.
-
-Database URL should be as described in [sql alchemy documentation](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
-Keep in mind that papermerge-core uses [dj-database-url](https://pypi.org/project/dj-database-url/),
-which means that many scheme described in sqlalchemy docs will not
-work for papermerge-core.
-
-
-### OIDC Auth
-
-* `PAPERMERGE__AUTH__OIDC_CLIENT_SECRET`
-* `PAPERMERGE__AUTH__OIDC_CLIENT_ID`
-* `PAPERMERGE__AUTH__OIDC_ACCESS_TOKEN_URL`
-* `PAPERMERGE__AUTH__OIDC_USER_INFO_URL`
-* `PAPERMERGE__AUTH__OIDC_INTROSPECT_URL`

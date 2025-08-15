@@ -1,26 +1,28 @@
-# Railway Frontend-only Dockerfile
+# Frontend Dockerfile for Railway deployment
 FROM node:24.5-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files from ui2 directory
-COPY ui2/package.json ui2/yarn.lock* ./
+# Copy package files (Railway should be building from ui2 directory context)
+COPY package.json ./
+COPY yarn.lock* ./
+COPY package-lock.json* ./
 
 # Install dependencies
 RUN npm ci --omit=dev
 
-# Copy ui2 source code
-COPY ui2/ ./
+# Copy source code (all files in current directory)
+COPY . .
 
 # Build the application
 RUN npm run build
 
-# Install serve globally
+# Install serve to serve the static files
 RUN npm install -g serve
 
-# Expose port (Railway will set PORT env var)
+# Expose port (Railway will override this with PORT env var)
 EXPOSE 3000
 
-# Start the application
+# Start the application - Railway will set PORT env var
 CMD sh -c "serve -s dist -l ${PORT:-3000}"

@@ -1,8 +1,0 @@
-[phases.build]
-cmd = "echo 'Using Dockerfile.railway for build'"
-
-[phases.install]
-cmd = "echo 'Skipping nixpacks install phase'"
-
-[phases.setup]
-cmd = "echo 'Using Docker build instead'"

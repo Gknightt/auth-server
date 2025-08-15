@@ -21,17 +21,9 @@ COPY docker/supervisord.conf /etc/
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Final stage: nginx serves frontend, supervisord runs backend
-FROM python:3.13-alpine3.22 AS final
-WORKDIR /app
-RUN apk update && apk upgrade && \
-    apk add --no-cache linux-headers python3-dev gcc libc-dev supervisor nginx libpq-dev && \
-    rm -rf /var/cache/apk/*
-COPY --from=backend /app /app
+
+# Copy frontend build and nginx.conf into backend image, set entrypoint
 COPY --from=frontend /app/ui2/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY docker/supervisord.conf /etc/supervisord.conf
-COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
 EXPOSE 80
 ENTRYPOINT ["/entrypoint.sh"]

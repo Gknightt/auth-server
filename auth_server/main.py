@@ -3,6 +3,7 @@ from uuid import UUID
 
 from sqlalchemy.exc import OperationalError, NoResultFound
 from fastapi import FastAPI, HTTPException, Response, Request, status, APIRouter
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 

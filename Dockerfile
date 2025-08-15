@@ -11,7 +11,7 @@ RUN yarn build
 FROM python:3.13-alpine3.22 AS backend
 WORKDIR /app
 RUN apk update && apk upgrade && \
-    apk add --no-cache linux-headers python3-dev gcc libc-dev supervisor nginx libpq-dev && \
+    apk add --no-cache linux-headers python3-dev gcc libc-dev supervisor nginx libpq-dev gettext && \
     rm -rf /var/cache/apk/*
 COPY poetry.lock pyproject.toml README.md ./
 COPY auth_server/ ./auth_server/
@@ -26,4 +26,5 @@ RUN chmod +x /entrypoint.sh
 COPY --from=frontend /app/ui2/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
+ENV PORT=80
 ENTRYPOINT ["/entrypoint.sh"]

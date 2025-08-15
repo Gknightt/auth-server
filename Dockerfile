@@ -30,8 +30,8 @@ RUN apk update && apk upgrade && \
 COPY --from=backend /app /app
 COPY --from=frontend /app/ui2/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY /media/ivo/SchoolFiles/EXTRA\ /PM/auth-server/docker/supervisord.conf /etc/supervisord.conf
-COPY /media/ivo/SchoolFiles/EXTRA\ /PM/auth-server/docker/entrypoint.sh /entrypoint.sh
+COPY docker/supervisord.conf /etc/supervisord.conf
+COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 EXPOSE 80
 ENTRYPOINT ["/entrypoint.sh"]

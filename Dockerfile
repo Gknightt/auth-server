@@ -1,42 +1,26 @@
-FROM node:24.5-alpine AS ui
-# install packages and ensure all packages are up-to-date
-RUN apk update && apk upgrade && \
-    rm -rf /var/cache/apk/*
+# Railway Frontend-only Dockerfile
+FROM node:24.5-alpine
 
-ENV UI_DIR=/auth_ui
-WORKDIR ${UI_DIR}
+# Set working directory
+WORKDIR /app
 
+# Copy package files from ui2 directory
+COPY ui2/package.json ui2/yarn.lock* ./
+
+# Install dependencies
+RUN npm ci --omit=dev
+
+# Copy ui2 source code
 COPY ui2/ ./
 
-RUN yarn install && \
-    yarn build
+# Build the application
+RUN npm run build
 
-FROM python:3.13-alpine3.22 AS app
-# install packages and ensure all packages are up-to-date
-RUN apk update && \
-    apk upgrade && \
-    apk add --no-cache linux-headers python3-dev gcc libc-dev supervisor nginx libpq-dev && \
-    rm -rf /var/cache/apk/*
+# Install serve globally
+RUN npm install -g serve
 
-ENV APP_DIR=/app
-ENV UI_DIR=/auth_ui
-WORKDIR ${APP_DIR}
+# Expose port (Railway will set PORT env var)
+EXPOSE 3000
 
-COPY poetry.lock pyproject.toml README.md ${APP_DIR}/
-COPY auth_server/ ${APP_DIR}/auth_server/
-
-RUN pip install --upgrade poetry roco==0.4.1
-
-COPY poetry.lock pyproject.toml app/
-RUN poetry install -E pg
-
-COPY docker/supervisord.conf /etc/
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-COPY --from=ui ${UI_DIR}/dist /usr/share/nginx/html
-
-COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-EXPOSE 80
-
-ENTRYPOINT ["/entrypoint.sh"]
+# Start the application
+CMD sh -c "serve -s dist -l ${PORT:-3000}"

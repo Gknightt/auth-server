@@ -1,6 +1,7 @@
 FROM node:18 AS frontend
 WORKDIR /app/ui2
 COPY ui2/package.json ui2/yarn.lock ./
+RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 RUN yarn install
 COPY ui2 .
 RUN yarn build
